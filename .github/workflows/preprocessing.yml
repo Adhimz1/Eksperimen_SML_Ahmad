@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'dataset_raw/**'
-      - 'preprocessing/automate_*.py'
+      - 'automate_Ahmad.py'
 
 jobs:
   preprocess:
@@ -29,11 +29,10 @@ jobs:
 
       - name: Run Automation Script
         run: |
-          cd preprocessing
           python automate_Ahmad.py
 
       - name: Commit and Push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Automated: Update preprocessed dataset"
-          file_pattern: 'preprocessing/dataset_preprocessing/*.csv'
+          file_pattern: 'Membangun_model/dataset_preprocessing/*.csv'

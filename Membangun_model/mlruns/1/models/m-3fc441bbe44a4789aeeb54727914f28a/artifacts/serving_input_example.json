@@ -1,0 +1,14 @@
+{
+  "dataframe_split": {
+    "columns": [
+      "umur",
+      "nilai_ujian"
+    ],
+    "data": [
+      [
+        22.0,
+        95.0
+      ]
+    ]
+  }
+}
