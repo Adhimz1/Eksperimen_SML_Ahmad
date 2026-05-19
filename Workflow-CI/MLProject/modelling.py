@@ -1,15 +1,11 @@
 import pandas as pd
 import mlflow
+import os
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
 
-# 1. Setup MLflow & Enable Autolog
-mlflow.set_tracking_uri("sqlite:///mlflow.db")
-mlflow.set_experiment("Basic_ML_Experiment")
-mlflow.autolog() # WAJIB untuk kriteria Basic
+mlflow.autolog()
 
-# 2. Load Dataset
 print("Memuat dataset bersih...")
 try:
     df = pd.read_csv('dataset_preprocessing/dataset_clean.csv')
@@ -21,13 +17,12 @@ y = df['status_lulus']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# 3. Mulai run MLflow dan Training
-with mlflow.start_run(run_name="RandomForest_autolog"):
+with mlflow.start_run():
     print("Memulai proses training...")
     rf = RandomForestClassifier(n_estimators=10, max_depth=2, random_state=42)
     rf.fit(X_train, y_train)
     
-    y_pred = rf.predict(X_test)
-    acc = accuracy_score(y_test, y_pred)
-    print(f"Model berhasil dilatih dengan akurasi: {acc}")
-    print("Logging autolog berhasil dijalankan!")
+    # Simpan artefak model untuk pipeline CI
+    os.makedirs('model_artefak', exist_ok=True)
+    mlflow.sklearn.save_model(rf, "model_artefak")
+    print("Model berhasil disimpan ke model_artefak!")
