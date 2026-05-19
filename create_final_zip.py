@@ -4,14 +4,15 @@ import zipfile
 def create_submission_zip():
     zip_name = "Submission_Eksperimen_SML_Ahmad_Final.zip"
     
-    # Hanya folder dan file ini yang akan masuk ke dalam ZIP
+    # Tambahkan Workflow-CI.txt!
     allowed_items = [
         "dataset_raw",
         "preprocessing",
         "Membangun_model",
         "Workflow-CI",
         "Monitoring dan Logging",
-        "Eksperimen_SML_Ahmad.txt"
+        "Eksperimen_SML_Ahmad.txt",
+        "Workflow-CI.txt"
     ]
     
     print(f"Membuat {zip_name} yang sangat BERSIH khusus untuk reviewer...")
@@ -21,12 +22,10 @@ def create_submission_zip():
             if os.path.exists(item):
                 if os.path.isdir(item):
                     for root, dirs, files in os.walk(item):
-                        # Jangan masukkan folder __pycache__ atau .ipynb_checkpoints
                         if "__pycache__" in root or ".ipynb_checkpoints" in root:
                             continue
                         for file in files:
                             file_path = os.path.join(root, file)
-                            # Simpan ke zip dengan struktur yang sama
                             zipf.write(file_path, file_path)
                             print(f"Menambahkan: {file_path}")
                 else:
