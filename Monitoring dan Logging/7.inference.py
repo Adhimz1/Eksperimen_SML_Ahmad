@@ -1,37 +1,39 @@
-import os
-import mlflow.pyfunc
-import pandas as pd
+import requests
+import json
+import time
 
-def find_all_models():
-    found_models = []
-    for root, dirs, files in os.walk("."):
-        if "MLmodel" in files:
-            found_models.append(root)
-    return found_models
-
-models = find_all_models()
-if not models:
-    print("SANGAT ANEH: Tidak ada model MLFlow yang tersimpan di seluruh folder proyek ini!")
-else:
-    best_model_path = models[0]
-    print(f"Loading model dari path fisik: {best_model_path}")
+def run_inference():
+    # URL Flask API yang berjalan (bukan langsung ke MLFlow)
+    url = "http://127.0.0.1:8000/predict"
     
+    # Payload format MLFlow "dataframe_split"
+    payload = {
+        "dataframe_split": {
+            "columns": ["Pclass", "Age", "Fare"],
+            "data": [
+                [3, 22.0, 7.25],
+                [1, 38.0, 71.28],
+                [3, 26.0, 7.92]
+            ]
+        }
+    }
+    
+    print(f"Mengirim request ke Flask API di {url}...")
     try:
-        loaded_model = mlflow.pyfunc.load_model(best_model_path)
-        data = pd.DataFrame({
-            'Pclass': [3, 1, 3],
-            'Age': [22.0, 38.0, 26.0],
-            'Fare': [7.25, 71.28, 7.92]
-        })
-        print("\nData untuk diprediksi:")
-        print(data)
+        response = requests.post(url, json=payload)
         
-        predictions = loaded_model.predict(data)
-        
-        print("\n=== HASIL INFERENCE ===")
-        for i, pred in enumerate(predictions):
-            status = "Selamat (Survived)" if pred == 1 else "Tidak Selamat"
-            print(f"Penumpang {i+1} -> Prediksi: {pred} ({status})")
-            
+        if response.status_code == 200:
+            print("\n=== HASIL INFERENCE BUKTI MELALUI FLASK API ===")
+            predictions = response.json().get('predictions', [])
+            for i, pred in enumerate(predictions):
+                status = "Selamat (Survived)" if pred == 1 else "Tidak Selamat"
+                print(f"Penumpang {i+1} -> Prediksi: {pred} ({status})")
+        else:
+            print(f"Error {response.status_code}: {response.text}")
     except Exception as e:
-        print(f"Error loading model: {e}")
+        print(f"Gagal menghubungi server. Pastikan Flask API dan MLFlow Serve sudah berjalan! Error: {e}")
+
+if __name__ == "__main__":
+    while True:
+        run_inference()
+        time.sleep(2) # Kirim request setiap 2 detik agar grafik Prometheus naik

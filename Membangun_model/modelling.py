@@ -1,17 +1,18 @@
 import pandas as pd
 import mlflow
+import mlflow.sklearn
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 
-# Aktifkan MLflow Autologging
-mlflow.autolog()
+# Aktifkan MLflow Autologging secara spesifik untuk scikit-learn
+mlflow.sklearn.autolog(log_models=True)
 
 print("Memuat dataset bersih...")
 try:
     df = pd.read_csv('dataset_preprocessing/dataset_clean.csv')
 except FileNotFoundError:
-    df = pd.read_csv('../Workflow-CI/MLProject/dataset_preprocessing/dataset_clean.csv')
+    df = pd.read_csv('Workflow-CI/MLProject/dataset_preprocessing/dataset_clean.csv')
 
 X = df[['Pclass', 'Age', 'Fare']]
 y = df['Survived']
@@ -23,9 +24,8 @@ with mlflow.start_run():
     rf = RandomForestClassifier(n_estimators=50, max_depth=5, random_state=42)
     rf.fit(X_train, y_train)
     
-    # Karena kita menggunakan mlflow.autolog(), kita TIDAK PERLU lagi melakukan logging manual
-    # seperti mlflow.sklearn.save_model() atau mlflow.log_metric().
-    # Semuanya otomatis dicatat oleh autolog!
+    # Paksa simpan model agar pasti ada folder "model" di UI
+    mlflow.sklearn.log_model(rf, "model")
     
     y_pred = rf.predict(X_test)
     acc = accuracy_score(y_test, y_pred)
